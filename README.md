@@ -1,3 +1,17 @@
+# 项目速览
+这是一个基于 PostGIS 的**批量坐标转换工具**，核心目标是把业务数据从 WGS84（GPS）批量转换到互联网底图可叠加的坐标系，并将结果回写到表字段，减少应用层动态换算压力。
+
+**核心能力：**
+- 支持 WGS84、GCJ-02、BD-09 以及百度经纬度/百度墨卡托（BDMKT）互转。
+- 支持 Point、LineString、Polygon、MultiPoint、MultiLineString、MultiPolygon 六类几何批处理。
+- 提供统一入口 `FreeGIS_Coordinate_Transform(schema_name, table_name, transform_type)`，执行后自动新增 `transform_geom` 存储结果。
+
+**处理流程：**
+1. 校验目标表（空间表、二维几何、SRID）。
+2. `ST_DumpPoints` 拆点。
+3. 批量执行点级坐标转换。
+4. 按原图形类型重组几何并回写 `transform_geom`。
+
 # 一 背景
 GIS项目中底图是必不可少的，绝大部分GIS项目使用的底图是基于高德，谷歌，百度，天地图等互联网（在线/离线）底图。由于我国特殊国情，公众版地理信息服务（包括电子底图）都要进行各种坐标偏移旋转等数据加密处理，并获取国土资源部数据审查并颁发审图号才可公开发布。企业的GIS数据都是通过传感器或者实地测量获得的非加密的WGS84坐标（即常用的gps那种坐标），当企业将自己的业务数据叠加到互联网底图时，不可避免出现**图层叠加偏移**问题，如下图：
 ![图层叠加偏移.png](https://upload-images.jianshu.io/upload_images/68979-035a4c4ba3ad9571.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
